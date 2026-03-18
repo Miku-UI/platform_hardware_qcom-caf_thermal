@@ -30,7 +30,7 @@
 
 /* Changes from Qualcomm Innovation Center are provided under the following license:
 
-Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
 SPDX-License-Identifier: BSD-3-Clause-Clear */
 
 #include <cstdio>
@@ -45,7 +45,8 @@ SPDX-License-Identifier: BSD-3-Clause-Clear */
 
 #define MAX_LENGTH		50
 #define MAX_PATH		(256)
-#define DEFAULT_HYSTERESIS	5000
+#define DEFAULT_HYSTERESIS	5
+#define DEFAULT_SKIN_HYSTERESIS	2
 #define THERMAL_SYSFS		"/sys/class/thermal/"
 #define TZ_DIR_NAME		"thermal_zone"
 #define TZ_DIR_FMT		"thermal_zone%d"
@@ -62,11 +63,10 @@ SPDX-License-Identifier: BSD-3-Clause-Clear */
 #define CDEV_CUR_STATE_PATH	"/sys/class/thermal/cooling_device%d/cur_state"
 #define CPU_USAGE_FILE		"/proc/stat"
 #define CPU_ONLINE_FILE_FORMAT	"/sys/devices/system/cpu/cpu%d/online"
-#define LIMIT_PROFILE_1_SD_TEMP	118000
+#define LIMIT_PROFILE_1_SD_TEMP	125000
 #define LIMIT_PROFILE_TRIP_TYPE	"hot"
 #define LIMIT_PROFILE_SD_TZ	"aoss-0"
 #define LIMIT_PROFILE_TRIP_MAX	11
-
 
 namespace aidl {
 namespace android {
@@ -119,6 +119,7 @@ static std::unordered_map<std::string, cdevType> cdev_map = {
 	{"cdsp_hw", cdevType::NPU},
 	{"battery", cdevType::BATTERY},
 	{"fan-max31760", cdevType::FAN},
+	{"display-fps", cdevType::DISPLAY},
 };
 
 ThermalCommon::ThermalCommon()
@@ -160,7 +161,7 @@ static int readLineFromFile(std::string_view path, std::string& out)
 	if (fd == NULL) {
 		LOG(ERROR) << "Path:" << std::string(path) << " file open error.err:"
 			<< strerror(errno) << std::endl;
-		return errno;
+		return -errno;
 	}
 
 	fgets_ret = fgets(buf, MAX_LENGTH, fd);
@@ -270,29 +271,23 @@ int ThermalCommon::initialize_sensor(struct target_therm_cfg& cfg, int sens_idx)
 
 	sensor.sensor_name = cfg.sensor_list[sens_idx];
 	sensor.positiveThresh = cfg.positive_thresh_ramp;
+	sensor.no_trip_set = cfg.no_trip_set;
 	sensor.lastThrottleStatus = sensor.t.throttlingStatus =
 		ThrottlingSeverity::NONE;
 	sensor.thresh.type = sensor.t.type = cfg.type;
-	sensor.throt_severity = cfg.throt_severity;
 	for (idx = 0; idx <= (size_t)ThrottlingSeverity::SHUTDOWN; idx++) {
 		sensor.thresh.hotThrottlingThresholds.push_back(UNKNOWN_TEMPERATURE);
 		sensor.thresh.coldThrottlingThresholds.push_back(UNKNOWN_TEMPERATURE);
 	}
 
-	if (cfg.throt_thresh != 0 && cfg.positive_thresh_ramp)
-		sensor.thresh.hotThrottlingThresholds[(size_t)sensor.throt_severity] =
-			cfg.throt_thresh / (float)sensor.mulFactor;
-	else if (cfg.throt_thresh != 0 && !cfg.positive_thresh_ramp)
-		sensor.thresh.coldThrottlingThresholds[(size_t)sensor.throt_severity] =
-			cfg.throt_thresh / (float)sensor.mulFactor;
-
-	if (cfg.shutdwn_thresh != 0 && cfg.positive_thresh_ramp)
-		sensor.thresh.hotThrottlingThresholds[(size_t)ThrottlingSeverity::SHUTDOWN] =
-			cfg.shutdwn_thresh / (float)sensor.mulFactor;
-	else if (cfg.shutdwn_thresh != 0 && !cfg.positive_thresh_ramp)
-		sensor.thresh.coldThrottlingThresholds[(size_t)ThrottlingSeverity::SHUTDOWN] =
-			cfg.shutdwn_thresh / (float)sensor.mulFactor;
-
+	for (idx = 0; idx <= (size_t)ThrottlingSeverity::SHUTDOWN; idx++) {
+		if (cfg.thresh[idx] != 0 && cfg.positive_thresh_ramp)
+			sensor.thresh.hotThrottlingThresholds[idx] =
+				cfg.thresh[idx] / (float)sensor.mulFactor;
+		else if (cfg.thresh[idx] != 0 && !cfg.positive_thresh_ramp)
+			sensor.thresh.coldThrottlingThresholds[idx] =
+				cfg.thresh[idx] / (float)sensor.mulFactor;
+	}
 	sens.push_back(sensor);
 
 	return 0;
@@ -310,6 +305,17 @@ int ThermalCommon::initializeCpuSensor(struct target_therm_cfg& cpu_cfg)
 	return 0;
 }
 
+int ThermalCommon::initNewThermalZone(struct target_therm_cfg& cfg)
+{
+
+	if (cfg.type == TemperatureType::CPU)
+		initializeCpuSensor(cfg);
+	else
+		initialize_sensor(cfg, 0);
+
+	return 1;
+}
+
 int ThermalCommon::initThermalZones(std::vector<struct target_therm_cfg>& cfg)
 {
 	std::vector<struct target_therm_cfg>::iterator it;
@@ -321,14 +327,10 @@ int ThermalCommon::initThermalZones(std::vector<struct target_therm_cfg>& cfg)
 
 	for (it = cfg.begin(); it != cfg.end(); it++)
 	{
-		if (it->type == TemperatureType::CPU) {
-			if (initializeCpuSensor(*it) < 0)
-				return -1;
-			continue;
-		}
-		if (initialize_sensor(*it, 0) < 0) {
-			return -1;
-		}
+		if (it->type == TemperatureType::CPU)
+			initializeCpuSensor(*it);
+		else
+			initialize_sensor(*it, 0);
 	}
 
 	return sens.size();
@@ -435,21 +437,21 @@ int ThermalCommon::estimateSeverity(struct therm_sensor& sensor)
 	int idx = 0;
 	ThrottlingSeverity severity = ThrottlingSeverity::NONE;
 	float temp = sensor.t.value;
+	int hysteresis = (sensor.thresh.type == TemperatureType::SKIN) ?
+				DEFAULT_SKIN_HYSTERESIS : DEFAULT_HYSTERESIS;
 
 	for (idx = (int)ThrottlingSeverity::SHUTDOWN; idx >= 0; idx--) {
 		/* If a particular threshold is hit already, check if the
 		 * hysteresis is cleared before changing the severity */
-		if (idx == (int)sensor.t.throttlingStatus) {
+		if (idx <= (int)sensor.t.throttlingStatus) {
 			if ((sensor.positiveThresh &&
 				!isnan(sensor.thresh.hotThrottlingThresholds[idx]) &&
 				temp >=
-				(sensor.thresh.hotThrottlingThresholds[idx] -
-				DEFAULT_HYSTERESIS / sensor.mulFactor)) ||
+				(sensor.thresh.hotThrottlingThresholds[idx] - hysteresis)) ||
 				(!sensor.positiveThresh &&
 				!isnan(sensor.thresh.coldThrottlingThresholds[idx]) &&
 				temp <=
-				(sensor.thresh.coldThrottlingThresholds[idx] +
-				DEFAULT_HYSTERESIS / sensor.mulFactor)))
+				(sensor.thresh.coldThrottlingThresholds[idx] + hysteresis)))
 				break;
 			continue;
 		}
@@ -474,6 +476,30 @@ int ThermalCommon::estimateSeverity(struct therm_sensor& sensor)
 		return -1;
 	sensor.lastThrottleStatus = sensor.t.throttlingStatus;
 	sensor.t.throttlingStatus = severity;
+
+	if (sensor.sensor_name == "disp-lea-left" || sensor.sensor_name == "disp-lea-right") {
+		ThrottlingSeverity cur_severity =
+				std::max(left_display_throttle_severity, right_display_throttle_severity);
+		if (sensor.sensor_name == "disp-lea-left") {
+			left_display_throttle_severity = severity;
+		} else if (sensor.sensor_name == "disp-lea-right") {
+			right_display_throttle_severity = severity;
+		}
+
+		ThrottlingSeverity new_severity =
+				std::max(left_display_throttle_severity, right_display_throttle_severity);
+
+		LOG(DEBUG) << "Current display severity: " << (int)cur_severity
+			<< " New severity L: " << (int)left_display_throttle_severity
+			<< " New severity R: " << (int)right_display_throttle_severity
+			<< " New severity combined: " << (int)new_severity << std::endl;
+
+		if (cur_severity != new_severity) {
+			return (int)new_severity;
+		} else {
+			return -1;
+		}
+	}
 
 	return (int)severity;
 }
@@ -522,6 +548,8 @@ void ThermalCommon::initThreshold(struct therm_sensor& sensor)
 	int ret = 0, idx;
 	ThrottlingSeverity severity = ThrottlingSeverity::NONE;
 	int next_trip, curr_trip, hyst_temp = 0;
+	int hysteresis = (sensor.thresh.type == TemperatureType::SKIN) ?
+				DEFAULT_SKIN_HYSTERESIS : DEFAULT_HYSTERESIS;
 
 	LOG(DEBUG) << "Entering " <<__func__;
 	if (!sensor.positiveThresh) {
@@ -567,9 +595,10 @@ void ThermalCommon::initThreshold(struct therm_sensor& sensor)
 				(int)sensor.t.throttlingStatus]
 					* sensor.mulFactor;
 		if (!isnan(next_trip))
-			hyst_temp = (next_trip - curr_trip) + DEFAULT_HYSTERESIS;
+			hyst_temp = (next_trip - curr_trip) + (hysteresis *
+					sensor.mulFactor);
 		else
-			hyst_temp = DEFAULT_HYSTERESIS;
+			hyst_temp = hysteresis * sensor.mulFactor;
 		LOG(DEBUG) << "Sensor: " << sensor.t.name << " hysteresis:"
 			<< hyst_temp << std::endl;
 		snprintf(file_name, sizeof(file_name), HYST_FILE_FORMAT,
@@ -638,7 +667,6 @@ int ThermalCommon::findLimitProfile(void)
 
 	return lp;
 }
-
 }// namespace thermal
 }// namespace hardware
 }// namespace android

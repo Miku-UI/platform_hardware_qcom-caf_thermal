@@ -27,20 +27,14 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Changes from Qualcomm Innovation Center are provided under the following license:
- * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Changes from Qualcomm Technologies, Inc. are provided under the following license:
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
-
- /* Changes from Qualcomm Innovation Center are provided under the following license:
-
-Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
-SPDX-License-Identifier: BSD-3-Clause-Clear */
 
 #include <unordered_map>
 #include <android-base/logging.h>
 #include <aidl/android/hardware/thermal/BnThermal.h>
-#include <utility>
 
 #include "thermalData.h"
 #include "thermalConfig.h"
@@ -49,235 +43,8 @@ namespace aidl {
 namespace android {
 namespace hardware {
 namespace thermal {
-
-	constexpr std::string_view socIDPath("/sys/devices/soc0/soc_id");
 	constexpr std::string_view hwPlatformPath("/sys/devices/soc0/hw_platform");
-
-	std::vector<std::string> cpu_sensors_439 =
-	{
-		"apc1-cpu0-usr",
-		"apc1-cpu1-usr",
-		"apc1-cpu2-usr",
-		"apc1-cpu3-usr",
-		"cpuss0-usr",
-		"cpuss0-usr",
-		"cpuss0-usr",
-		"cpuss0-usr",
-	};
-
-	std::vector<struct target_therm_cfg> sensor_cfg_sdm632 =
-	{
-		{
-			TemperatureType::CPU,
-			cpu_sensors_439,
-			"",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::GPU,
-			{ "gpu0-usr" },
-			"GPU",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::SKIN,
-			{ "xo-therm-adc" },
-			"skin",
-			40000,
-			95000,
-			true,
-		},
-		{
-			TemperatureType::BCL_VOLTAGE,
-			{ "pmi-vbat-lvl0" },
-			"vbat",
-			3200,
-			3000,
-			false,
-		},
-		{
-			TemperatureType::BCL_CURRENT,
-			{ "pmi-ibat-lvl0" },
-			"ibat",
-			4200,
-			4400,
-			true,
-		},
-		{
-			TemperatureType::BCL_PERCENTAGE,
-			{ "soc" },
-			"soc",
-			10,
-			2,
-			false,
-		},
-	};
-
-	std::vector<struct target_therm_cfg> sensor_cfg_439 =
-	{
-		{
-			TemperatureType::CPU,
-			cpu_sensors_439,
-			"",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::GPU,
-			{ "gpu-usr" },
-			"GPU",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::SKIN,
-			{ "quiet-therm-adc" },
-			"skin",
-			40000,
-			95000,
-			true,
-		},
-		{
-			TemperatureType::BCL_VOLTAGE,
-			{ "vbat_adc" },
-			"vbat",
-			3200,
-			3000,
-			false,
-		},
-		{
-			TemperatureType::BCL_CURRENT,
-			{ "ibat-high" },
-			"ibat",
-			4200,
-			4400,
-			true,
-		},
-		{
-			TemperatureType::BCL_PERCENTAGE,
-			{ "soc" },
-			"soc",
-			10,
-			2,
-			false,
-		},
-	};
-
-	std::vector<std::string> cpu_sensors_sdm710 =
-	{
-		"cpu0-silver-usr",
-		"cpu1-silver-usr",
-		"cpu2-silver-usr",
-		"cpu3-silver-usr",
-		"cpu4-silver-usr",
-		"cpu5-silver-usr",
-		"cpu0-gold-usr",
-		"cpu1-gold-usr",
-	};
-
-	std::vector<struct target_therm_cfg> sensor_cfg_sdm710 = {
-		{
-			TemperatureType::CPU,
-			cpu_sensors_sdm710,
-			"",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::GPU,
-			{"gpu0-usr"},
-			"gpu0",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::GPU,
-			{"gpu1-usr"},
-			"gpu1",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::SKIN,
-			{"xo-therm-adc"},
-			"skin",
-			55000,
-			95000,
-			true,
-		},
-		{
-			TemperatureType::BCL_PERCENTAGE,
-			{"soc"},
-			"soc",
-			10,
-			2,
-			false,
-		},
-	};
-
-	std::vector<std::string> cpu_sensors_sdm845 =
-	{
-		"cpu0-silver-usr",
-		"cpu1-silver-usr",
-		"cpu2-silver-usr",
-		"cpu3-silver-usr",
-		"cpu0-gold-usr",
-		"cpu1-gold-usr",
-		"cpu2-gold-usr",
-		"cpu3-gold-usr",
-	};
-
-	std::vector<struct target_therm_cfg> sensor_cfg_sdm845 = {
-		{
-			TemperatureType::CPU,
-			cpu_sensors_sdm845,
-			"",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::GPU,
-			{"gpu0-usr"},
-			"gpu0",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::GPU,
-			{"gpu1-usr"},
-			"gpu1",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::SKIN,
-			{"xo-therm-adc"},
-			"skin",
-			55000,
-			95000,
-			true,
-		},
-		{
-			TemperatureType::BCL_PERCENTAGE,
-			{"soc"},
-			"soc",
-			10,
-			2,
-			false,
-		},
-	};
+	constexpr std::string_view socIDPath("/sys/devices/soc0/soc_id");
 
 	std::vector<std::string> cpu_sensors_bengal =
 	{
@@ -297,92 +64,55 @@ namespace thermal {
 			TemperatureType::CPU,
 			cpu_sensors_bengal,
 			"",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpu" },
 			"GPU",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::SKIN,
 			{ "xo-therm" },
 			"skin",
-			40000,
-			95000,
+			{
+			[LIGHT] = 36500,
+			[MODERATE] = 40000,
+			[SEVERE] = 46500,
+			[CRITICAL] = 50000,
+			[EMERGENCY] = 55000,
+			[SHUTDOWN] = 95000,
+			},
 			true,
 		},
 		{
 			TemperatureType::BCL_CURRENT,
 			{ "pmi632-ibat-lvl0" },
 			"ibat",
-			4000,
-			4200,
+			{
+			[SEVERE] = 4000,
+			[SHUTDOWN] = 4200,
+			},
+			true,
 			true,
 		},
 		{
 			TemperatureType::BCL_PERCENTAGE,
 			{ "socd" },
 			"socd",
-			90,
-			99,
-			false,
-		},
-	};
-
-	std::vector<std::string> cpu_sensors_talos =
-	{
-		"cpuss-2",
-		"cpuss-2",
-		"cpuss-1",
-		"cpuss-1",
-		"cpuss-0",
-		"cpuss-0",
-		"cpu-1-0",
-		"cpu-1-2",
-	};
-
-	std::vector<struct target_therm_cfg>  sensor_cfg_talos_common =
-	{
-		{
-			TemperatureType::CPU,
-			cpu_sensors_talos,
-			"",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::GPU,
-			{ "gpu" },
-			"gpu",
-			95000,
-			115000,
-			true,
-		},
-	};
-
-	std::vector<struct target_therm_cfg>  sensor_cfg_sa6155_common =
-	{
-		{
-			TemperatureType::CPU,
-			cpu_sensors_talos,
-			"",
-			105000,
-			118000,
-			true,
-		},
-		{
-			TemperatureType::GPU,
-			{ "gpu" },
-			"gpu",
-			105000,
-			118000,
+			{
+			[SEVERE] = 90,
+			[SHUTDOWN] = 99,
+			},
 			true,
 		},
 	};
@@ -405,48 +135,65 @@ namespace thermal {
 			TemperatureType::CPU,
 			cpu_sensors_khaje,
 			"",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpu" },
 			"GPU",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::SKIN,
 			{ "xo-therm" },
 			"skin",
-			40000,
-			95000,
+			{
+			[LIGHT] = 36500,
+			[MODERATE] = 40000,
+			[SEVERE] = 46500,
+			[CRITICAL] = 50000,
+			[EMERGENCY] = 55000,
+			[SHUTDOWN] = 95000,
+			},
 			true,
 		},
 		{
 			TemperatureType::BCL_VOLTAGE,
 			{ "vbat" },
 			"vbat",
-			3000,
-			2800,
+			{
+			[SEVERE] = 3000,
+			[SHUTDOWN] = 2800,
+			},
 			false,
 		},
 		{
 			TemperatureType::BCL_CURRENT,
 			{ "pm7250b-ibat-lvl0" },
 			"ibat",
-			5500,
-			6000,
+			{
+			[SEVERE] = 5500,
+			[SHUTDOWN] = 6000,
+			},
+			true,
 			true,
 		},
 		{
 			TemperatureType::BCL_PERCENTAGE,
 			{ "socd" },
 			"socd",
-			90,
-			99,
+			{
+			[SEVERE] = 90,
+			[SHUTDOWN] = 99,
+			},
 			true,
 		},
 	};
@@ -469,85 +216,66 @@ namespace thermal {
 			TemperatureType::CPU,
 			cpu_sensors_trinket,
 			"",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpu" },
 			"GPU",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::SKIN,
 			{ "xo-therm" },
 			"skin",
-			40000,
-			95000,
+			{
+			[LIGHT] = 36500,
+			[MODERATE] = 40000,
+			[SEVERE] = 46500,
+			[CRITICAL] = 50000,
+			[EMERGENCY] = 55000,
+			[SHUTDOWN] = 95000,
+			},
 			true,
 		},
 		{
 			TemperatureType::BCL_VOLTAGE,
 			{ "vbat" },
 			"vbat",
-			3000,
-			2800,
+			{
+			[SEVERE] = 3000,
+			[SHUTDOWN] = 2800,
+			},
 			false,
 		},
 		{
 			TemperatureType::BCL_CURRENT,
 			{ "pmi632-ibat-lvl0" },
 			"ibat",
-			4000,
-			4200,
+			{
+			[SEVERE] = 4000,
+			[SHUTDOWN] = 4200,
+			},
+			true,
 			true,
 		},
 		{
 			TemperatureType::BCL_PERCENTAGE,
 			{ "socd" },
 			"socd",
-			90,
-			99,
+			{
+			[SEVERE] = 90,
+			[SHUTDOWN] = 99,
+			},
 			true,
-		},
-	};
-
-	std::vector<struct target_therm_cfg> sensor_cfg_sdm660 =
-	{
-		{
-			TemperatureType::CPU,
-			cpu_sensors_trinket,
-			"",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::GPU,
-			{ "gpu-usr" },
-			"GPU",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::SKIN,
-			{ "xo-therm-adc" },
-			"skin",
-			40000,
-			95000,
-			true,
-		},
-		{
-			TemperatureType::BCL_PERCENTAGE,
-			{ "soc" },
-			"soc",
-			10,
-			2,
-			false,
 		},
 	};
 
@@ -569,49 +297,66 @@ namespace thermal {
 			TemperatureType::CPU,
 			cpu_sensors_lito,
 			"",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-0-usr" },
 			"GPU",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::SKIN,
 			{ "xo-therm-usr" },
 			"skin",
-			55000,
-			95000,
+			{
+			[LIGHT] = 36500,
+			[MODERATE] = 40000,
+			[SEVERE] = 46500,
+			[CRITICAL] = 50000,
+			[EMERGENCY] = 55000,
+			[SHUTDOWN] = 95000,
+			},
 			true,
 		},
 		{
 			TemperatureType::BCL_CURRENT,
 			{ "pm7250b-ibat-lvl0" },
 			"ibat",
-			4500,
-			5000,
+			{
+			[SEVERE] = 4500,
+			[SHUTDOWN] = 5000,
+			},
+			true,
 			true,
 		},
 		{
 			TemperatureType::BCL_VOLTAGE,
 			{ "pm7250b-vbat-lvl0" },
 			"vbat",
-			3200,
-			3000,
+			{
+			[SEVERE] = 3200,
+			[SHUTDOWN] = 3000,
+			},
 			false,
 		},
 		{
 			TemperatureType::BCL_PERCENTAGE,
-			{ "soc" },
-			"soc",
-			10,
-			2,
-			false,
+			{ "socd" },
+			"socd",
+			{
+			[SEVERE] = 90,
+			[SHUTDOWN] = 98,
+			},
+			true,
 		},
 	};
 
@@ -621,49 +366,66 @@ namespace thermal {
 			TemperatureType::CPU,
 			cpu_sensors_lito,
 			"",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-0-usr" },
 			"GPU",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::SKIN,
 			{ "xo-therm-adc" },
 			"skin",
-			40000,
-			95000,
+			{
+			[LIGHT] = 36500,
+			[MODERATE] = 40000,
+			[SEVERE] = 46500,
+			[CRITICAL] = 50000,
+			[EMERGENCY] = 55000,
+			[SHUTDOWN] = 95000,
+			},
 			true,
 		},
 		{
 			TemperatureType::BCL_VOLTAGE,
 			{ "pm6150-vbat-lvl0" },
 			"vbat",
-			3000,
-			2800,
+			{
+			[SEVERE] = 3000,
+			[SHUTDOWN] = 2800,
+			},
 			false,
 		},
 		{
 			TemperatureType::BCL_CURRENT,
 			{ "pm6150-ibat-lvl0" },
 			"ibat",
-			5500,
-			6000,
+			{
+			[SEVERE] = 5500,
+			[SHUTDOWN] = 6000,
+			},
+			true,
 			true,
 		},
 		{
 			TemperatureType::BCL_PERCENTAGE,
-			{ "soc" },
-			"soc",
-			10,
-			2,
-			false,
+			{ "socd" },
+			"socd",
+			{
+			[SEVERE] = 90,
+			[SHUTDOWN] = 98,
+			},
+			true,
 		},
 	};
 
@@ -685,149 +447,55 @@ namespace thermal {
 			TemperatureType::CPU,
 			cpu_sensors_holi,
 			"",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-0" },
 			"gpu0",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-1" },
 			"gpu1",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::SKIN,
 			{ "quiet-therm" },
 			"skin",
-			40000,
-			95000,
+			{
+			[LIGHT] = 36500,
+			[MODERATE] = 40000,
+			[SEVERE] = 46500,
+			[CRITICAL] = 50000,
+			[EMERGENCY] = 55000,
+			[SHUTDOWN] = 95000,
+			},
 			true,
 		},
 		{
 			TemperatureType::BCL_CURRENT,
 			{ "pm7250b-ibat-lvl0" },
 			"ibat",
-			5500,
-			6000,
+			{
+			[SEVERE] = 5500,
+			[SHUTDOWN] = 6000,
+			},
 			true,
-		},
-	};
-
-	std::vector<std::string> cpu_sensors_msmnile =
-	{
-		"cpu-0-0",
-		"cpu-0-1",
-		"cpu-0-2",
-		"cpu-0-3",
-		"cpu-1-0",
-		"cpu-1-1",
-		"cpu-1-2",
-		"cpu-1-3",
-	};
-
-	std::vector<struct target_therm_cfg>  sensor_cfg_msmnile_common = {
-		{
-			TemperatureType::CPU,
-			cpu_sensors_msmnile,
-			"",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::GPU,
-			{ "gpuss-0" },
-			"gpu0",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::GPU,
-			{ "gpuss-1" },
-			"gpu1",
-			95000,
-			115000,
-			true,
-		},
-	};
-
-	std::vector<struct target_therm_cfg>  sensor_cfg_sa8155_common = {
-		{
-			TemperatureType::CPU,
-			cpu_sensors_msmnile,
-			"",
-			105000,
-			118000,
-			true,
-		},
-		{
-			TemperatureType::GPU,
-			{ "gpuss-0" },
-			"gpu0",
-			105000,
-			118000,
-			true,
-		},
-		{
-			TemperatureType::GPU,
-			{ "gpuss-1" },
-			"gpu1",
-			105000,
-			118000,
-			true,
-		},
-	};
-
-	std::vector<struct target_therm_cfg>  sensor_cfg_sa8195_common = {
-		{
-			TemperatureType::CPU,
-			cpu_sensors_msmnile,
-			"",
-			105000,
-			118000,
-			true,
-		},
-		{
-			TemperatureType::GPU,
-			{ "gpuss-0" },
-			"gpu0",
-			105000,
-			118000,
-			true,
-		},
-		{
-			TemperatureType::GPU,
-			{ "gpuss-1" },
-			"gpu1",
-			105000,
-			118000,
-			true,
-		},
-		{
-			TemperatureType::GPU,
-			{ "gpuss-2" },
-			"gpu2",
-			105000,
-			118000,
-			true,
-		},
-		{
-			TemperatureType::GPU,
-			{ "gpuss-3" },
-			"gpu3",
-			105000,
-			118000,
 			true,
 		},
 	};
@@ -844,37 +512,131 @@ namespace thermal {
 		"cpu-1-3",
 	};
 
+	std::vector<struct target_therm_cfg>  sensor_cfg_msmnile = {
+		{
+			TemperatureType::CPU,
+			cpu_sensors_kona,
+			"",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-0" },
+			"gpu0",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-1" },
+			"gpu1",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+		},
+		{
+			TemperatureType::SKIN,
+			{ "xo-therm" },
+			"skin",
+			{
+			[LIGHT] = 36500,
+			[MODERATE] = 40000,
+			[SEVERE] = 46500,
+			[CRITICAL] = 50000,
+			[EMERGENCY] = 55000,
+			[SHUTDOWN] = 95000,
+			},
+			true,
+		},
+	};
+
+	std::vector<struct target_therm_cfg>  sensor_cfg_msmnile_specific =
+	{
+		{
+			TemperatureType::BCL_CURRENT,
+			{ "pm8150b-ibat-lvl0" },
+			"ibat",
+			{
+			[SEVERE] = 4500,
+			[SHUTDOWN] = 5000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::BCL_VOLTAGE,
+			{ "pm8150b-vbat-lvl0" },
+			"vbat",
+			{
+			[SEVERE] = 3200,
+			[SHUTDOWN] = 3000,
+			},
+			false,
+		},
+		{
+			TemperatureType::BCL_PERCENTAGE,
+			{ "socd" },
+			"socd",
+			{
+			[SEVERE] = 90,
+			[SHUTDOWN] = 99,
+			},
+			true,
+		},
+	};
+
 	std::vector<struct target_therm_cfg>  kona_common = {
 		{
 			TemperatureType::CPU,
 			cpu_sensors_kona,
 			"",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-0" },
 			"GPU0",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-1" },
 			"GPU1",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::SKIN,
 			{ "skin-msm-therm" },
 			"skin",
-			40000,
-			95000,
+			{
+			[LIGHT] = 36500,
+			[MODERATE] = 40000,
+			[SEVERE] = 46500,
+			[CRITICAL] = 50000,
+			[EMERGENCY] = 55000,
+			[SHUTDOWN] = 95000,
+			},
 			true,
 		}
 	};
@@ -884,32 +646,41 @@ namespace thermal {
 			TemperatureType::BCL_CURRENT,
 			{ "pm8150b-ibat-lvl0" },
 			"ibat",
-			4500,
-			5000,
+			{
+			[SEVERE] = 4500,
+			[SHUTDOWN] = 5000,
+			},
+			true,
 			true,
 		},
 		{
 			TemperatureType::BCL_VOLTAGE,
 			{ "vbat" },
 			"vbat",
-			3200,
-			3000,
+			{
+			[SEVERE] = 3200,
+			[SHUTDOWN] = 3000,
+			},
 			false,
 		},
 		{
 			TemperatureType::BCL_PERCENTAGE,
 			{ "socd" },
 			"socd",
-			90,
-			99,
-			false,
+			{
+			[SEVERE] = 90,
+			[SHUTDOWN] = 99,
+			},
+			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "npu" },
 			"npu",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 	};
@@ -931,56 +702,71 @@ namespace thermal {
 			TemperatureType::CPU,
 			cpu_sensors_lahaina,
 			"",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-0-usr" },
 			"GPU0",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-1-usr" },
 			"GPU1",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::BCL_CURRENT,
 			{ "pm8350b-ibat-lvl0" },
 			"ibat",
-			6000,
-			7500,
+			{
+			[SEVERE] = 6000,
+			[SHUTDOWN] = 7500,
+			},
+			true,
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nspss-0-usr" },
 			"nsp0",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nspss-1-usr" },
 			"nsp1",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nspss-2-usr" },
 			"nsp2",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 	};
@@ -990,8 +776,14 @@ namespace thermal {
 			TemperatureType::SKIN,
 			{ "xo-therm-usr" },
 			"skin",
-			55000,
-			95000,
+			{
+			[LIGHT] = 36500,
+			[MODERATE] = 40000,
+			[SEVERE] = 46500,
+			[CRITICAL] = 50000,
+			[EMERGENCY] = 55000,
+			[SHUTDOWN] = 95000,
+			},
 			true,
 		},
 	};
@@ -1001,8 +793,14 @@ namespace thermal {
 			TemperatureType::SKIN,
 			{ "quiet-therm-usr" },
 			"skin",
-			40000,
-			95000,
+			{
+			[LIGHT] = 36500,
+			[MODERATE] = 40000,
+			[SEVERE] = 46500,
+			[CRITICAL] = 50000,
+			[EMERGENCY] = 55000,
+			[SHUTDOWN] = 95000,
+			},
 			true,
 		},
 	};
@@ -1012,48 +810,64 @@ namespace thermal {
 			TemperatureType::CPU,
 			cpu_sensors_lahaina,
 			"",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-0-usr" },
 			"GPU0",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-1-usr" },
 			"GPU1",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nspss-0-usr" },
 			"nsp0",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nspss-1-usr" },
 			"nsp1",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::SKIN,
 			{ "quiet-therm-usr" },
 			"skin",
-			55000,
-			95000,
+			{
+			[LIGHT] = 36500,
+			[MODERATE] = 40000,
+			[SEVERE] = 46500,
+			[CRITICAL] = 50000,
+			[EMERGENCY] = 55000,
+			[SHUTDOWN] = 95000,
+			},
 			true,
 		},
 	};
@@ -1075,106 +889,61 @@ namespace thermal {
 			TemperatureType::CPU,
 			cpu_sensors_waipio,
 			"",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-0" },
 			"GPU0",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-1" },
 			"GPU1",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nspss-0" },
 			"nsp0",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nspss-1" },
 			"nsp1",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nspss-2" },
 			"nsp2",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
-		},
-	};
-
-	std::vector<struct target_therm_cfg>  diwali_common = {
-		{
-			TemperatureType::CPU,
-			cpu_sensors_waipio,
-			"",
-			95000,
-			115000,
-			true,
-			ThrottlingSeverity::LIGHT,
-		},
-		{
-			TemperatureType::GPU,
-			{ "gpuss-0" },
-			"GPU0",
-			95000,
-			115000,
-			true,
-			ThrottlingSeverity::LIGHT,
-		},
-		{
-			TemperatureType::GPU,
-			{ "gpuss-1" },
-			"GPU1",
-			95000,
-			115000,
-			true,
-			ThrottlingSeverity::LIGHT,
-		},
-		{
-			TemperatureType::NPU,
-			{ "nspss-0" },
-			"nsp0",
-			95000,
-			115000,
-			true,
-			ThrottlingSeverity::LIGHT,
-		},
-		{
-			TemperatureType::NPU,
-			{ "nspss-1" },
-			"nsp1",
-			95000,
-			115000,
-			true,
-			ThrottlingSeverity::LIGHT,
-		},
-		{
-			TemperatureType::NPU,
-			{ "nspss-2" },
-			"nsp2",
-			95000,
-			115000,
-			true,
-			ThrottlingSeverity::LIGHT,
 		},
 	};
 
@@ -1183,16 +952,25 @@ namespace thermal {
 			TemperatureType::BCL_CURRENT,
 			{ "pm8350b-ibat-lvl0" },
 			"ibat",
-			6000,
-			7500,
+			{
+			[SEVERE] = 6000,
+			[SHUTDOWN] = 7500,
+			},
+			true,
 			true,
 		},
 		{
 			TemperatureType::SKIN,
 			{ "xo-therm" },
 			"skin",
-			55000,
-			95000,
+			{
+			[LIGHT] = 36500,
+			[MODERATE] = 40000,
+			[SEVERE] = 46500,
+			[CRITICAL] = 50000,
+			[EMERGENCY] = 55000,
+			[SHUTDOWN] = 95000,
+			},
 			true,
 		},
 	};
@@ -1214,104 +992,130 @@ namespace thermal {
 			TemperatureType::CPU,
 			cpu_sensors_kalama,
 			"",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-0" },
 			"GPU0",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-1" },
 			"GPU1",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-2" },
 			"GPU2",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-3" },
 			"GPU3",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-4" },
 			"GPU4",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-5" },
 			"GPU5",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-6" },
 			"GPU6",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-7" },
 			"GPU7",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nspss-0" },
 			"nsp0",
-			100000,
-			115000,
+			{
+			[SEVERE] = 100000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nspss-1" },
 			"nsp1",
-			100000,
-			115000,
+			{
+			[SEVERE] = 100000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nspss-2" },
 			"nsp2",
-			100000,
-			115000,
+			{
+			[SEVERE] = 100000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nspss-3" },
 			"nsp3",
-			100000,
-			115000,
+			{
+			[SEVERE] = 100000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 	};
@@ -1321,16 +1125,25 @@ namespace thermal {
 			TemperatureType::BCL_CURRENT,
 			{ "pm8550b-ibat-lvl0" },
 			"ibat",
-			9000,
-			10000,
+			{
+			[SEVERE] = 9000,
+			[SHUTDOWN] = 10000,
+			},
+			true,
 			true,
 		},
 		{
 			TemperatureType::SKIN,
 			{ "skin-msm-therm" },
 			"skin",
-			46500,
-			95000,
+			{
+			[LIGHT] = 48000,
+			[MODERATE] = 49000,
+			[SEVERE] = 50000,
+			[CRITICAL] = 60000,
+			[EMERGENCY] = 61000,
+			[SHUTDOWN] = 95000,
+			},
 			true,
 		},
 	};
@@ -1352,48 +1165,60 @@ namespace thermal {
 			TemperatureType::CPU,
 			cpu_sensors_crow,
 			"",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-0" },
 			"GPU0",
-			102000,
-			115000,
+			{
+			[SEVERE] = 102000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-1" },
 			"GPU1",
-			102000,
-			115000,
+			{
+			[SEVERE] = 102000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nspss-0" },
 			"nsp0",
-			100000,
-			115000,
+			{
+			[SEVERE] = 100000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nspss-1" },
 			"nsp1",
-			100000,
-			115000,
+			{
+			[SEVERE] = 100000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nspss-2" },
 			"nsp2",
-			100000,
-			115000,
+			{
+			[SEVERE] = 100000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 	};
@@ -1403,8 +1228,14 @@ namespace thermal {
 			TemperatureType::SKIN,
 			{ "sys-therm-3" },
 			"skin",
-			60000,
-			95000,
+			{
+			[LIGHT] = 48000,
+			[MODERATE] = 49000,
+			[SEVERE] = 60000,
+			[CRITICAL] = 65000,
+			[EMERGENCY] = 70000,
+			[SHUTDOWN] = 95000,
+			},
 			true,
 		},
 	};
@@ -1412,152 +1243,27 @@ namespace thermal {
 	std::vector<struct target_therm_cfg>  diwali_specific = {
 		{
 			TemperatureType::BCL_CURRENT,
-			{ "pm7250b-ibat-lvl0" },
+			{ "pm8350b-ibat-lvl0" },
 			"ibat",
-			9000,
-			9500,
+			{
+			[SEVERE] = 6000,
+			[SHUTDOWN] = 7500,
+			},
+			true,
 			true,
 		},
 		{
 			TemperatureType::SKIN,
 			{ "quiet-therm" },
 			"skin",
-			46000,
-			95000,
-			true,
-			ThrottlingSeverity::LIGHT,
-		},
-	};
-
-	std::vector<std::string> cpu_sensors_neo =
-	{
-		"cpu-0-0",
-		"cpu-0-1",
-		"cpu-0-2",
-		"cpu-0-3",
-	};
-
-	std::vector<struct target_therm_cfg>  neo_common = {
-		{
-			TemperatureType::CPU,
-			cpu_sensors_neo,
-			"",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::GPU,
-			{ "gpuss-0" },
-			"GPU0",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::GPU,
-			{ "gpuss-1" },
-			"GPU1",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::NPU,
-			{ "nspss-0" },
-			"nsp0",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::NPU,
-			{ "nspss-1" },
-			"nsp1",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::NPU,
-			{ "nspss-2" },
-			"nsp2",
-			95000,
-			115000,
-			true,
-		},
-	};
-
-	std::vector<std::string> cpu_sensors_parrot =
-	{
-		"cpu-0-0",
-		"cpu-0-1",
-		"cpu-0-2",
-		"cpu-0-3",
-		"cpu-1-0",
-		"cpu-1-2",
-		"cpu-1-4",
-		"cpu-1-6",
-	};
-
-	std::vector<struct target_therm_cfg>  parrot_common = {
-		{
-			TemperatureType::CPU,
-			cpu_sensors_parrot,
-			"",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::GPU,
-			{ "gpuss-0" },
-			"GPU0",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::GPU,
-			{ "gpuss-1" },
-			"GPU1",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::NPU,
-			{ "nspss-0" },
-			"nsp0",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::NPU,
-			{ "nspss-1" },
-			"nsp1",
-			95000,
-			115000,
-			true,
-		},
-	};
-
-	std::vector<struct target_therm_cfg>  parrot_specific = {
-		{
-			TemperatureType::BCL_CURRENT,
-			{ "pm7250b-ibat-lvl0" },
-			"ibat",
-			6000,
-			7500,
-			true,
-		},
-		{
-			TemperatureType::SKIN,
-			{ "xo-therm" },
-			"skin",
-			55000,
-			95000,
+			{
+			[LIGHT] = 36500,
+			[MODERATE] = 40000,
+			[SEVERE] = 46500,
+			[CRITICAL] = 50000,
+			[EMERGENCY] = 55000,
+			[SHUTDOWN] = 95000,
+			},
 			true,
 		},
 	};
@@ -1579,48 +1285,60 @@ namespace thermal {
 			TemperatureType::CPU,
 			cpu_sensors_lemansAU,
 			"",
-			105000,
-			118000,
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 118000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-0" },
 			"GPU0",
-			105000,
-			118000,
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 118000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-1" },
 			"GPU1",
-			105000,
-			118000,
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 118000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-2" },
 			"GPU2",
-			105000,
-			118000,
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 118000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nsp-0-0-0" },
 			"nsp0",
-			105000,
-			118000,
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 118000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nsp-1-0-0" },
 			"nsp1",
-			105000,
-			118000,
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 118000,
+			},
 			true,
 		},
 	};
@@ -1629,8 +1347,11 @@ namespace thermal {
 		TemperatureType::BATTERY,
 		{ "battery" },
 		"battery",
-		80000,
-		90000,
+		{
+		[SEVERE] = 80000,
+		[SHUTDOWN] = 90000,
+		},
+		true,
 		true,
 	};
 
@@ -1639,16 +1360,21 @@ namespace thermal {
 			TemperatureType::BCL_VOLTAGE,
 			{ "vbat" },
 			"vbat",
-			3200,
-			3000,
+			{
+			[SEVERE] = 3200,
+			[SHUTDOWN] = 3000,
+			},
 			false,
+			true,
 		},
 		{
 			TemperatureType::BCL_PERCENTAGE,
 			{ "socd" },
 			"socd",
-			90,
-			99,
+			{
+			[SEVERE] = 90,
+			[SHUTDOWN] = 99,
+			},
 			true,
 		},
 	};
@@ -1669,120 +1395,150 @@ namespace thermal {
 			TemperatureType::CPU,
 			cpu_sensors_pineapple,
 			"",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-0" },
 			"GPU0",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-1" },
 			"GPU1",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-2" },
 			"GPU2",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-3" },
 			"GPU3",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-4" },
 			"GPU4",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-5" },
 			"GPU5",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-6" },
 			"GPU6",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-7" },
 			"GPU7",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nsphvx-0" },
 			"nsp0",
-			100000,
-			115000,
+			{
+			[SEVERE] = 100000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nsphvx-1" },
 			"nsp1",
-			100000,
-			115000,
+			{
+			[SEVERE] = 100000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nsphmx-0" },
 			"nsp2",
-			100000,
-			115000,
+			{
+			[SEVERE] = 100000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nsphmx-1" },
 			"nsp3",
-			100000,
-			115000,
+			{
+			[SEVERE] = 100000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nsphmx-2" },
 			"nsp4",
-			100000,
-			115000,
+			{
+			[SEVERE] = 100000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nsphmx-3" },
 			"nsp5",
-			100000,
-			115000,
+			{
+			[SEVERE] = 100000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 	};
@@ -1792,21 +1548,1123 @@ namespace thermal {
 			TemperatureType::BCL_CURRENT,
 			{ "pm8550b-ibat-lvl0" },
 			"ibat",
-			9000,
-			10000,
+			{
+			[SEVERE] = 9000,
+			[SHUTDOWN] = 10000,
+			},
+			true,
 			true,
 		},
 		{
 			TemperatureType::SKIN,
 			{ "skin-msm-therm" },
 			"skin",
-			46500,
-			95000,
+			{
+			[LIGHT] = 48000,
+			[MODERATE] = 49000,
+			[SEVERE] = 50000,
+			[CRITICAL] = 60000,
+			[EMERGENCY] = 61000,
+			[SHUTDOWN] = 90000,
+			},
 			true,
 		},
 	};
 
-std::vector<std::string> cpu_sensors_cliffs = {
+	std::vector<std::string> cpu_sensors_sun = {
+		"cpu-0-0-0",
+		"cpu-0-1-0",
+		"cpu-0-2-0",
+		"cpu-0-3-0",
+		"cpu-0-4-0",
+		"cpu-0-5-0",
+		"cpu-1-0-0",
+		"cpu-1-1-0",
+	};
+
+	std::vector<struct target_therm_cfg> sun_profile0 = {
+		{
+			TemperatureType::CPU,
+			cpu_sensors_sun,
+			"",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-0" },
+			"GPU0",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-1" },
+			"GPU1",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-2" },
+			"GPU2",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-3" },
+			"GPU3",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-4" },
+			"GPU4",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-5" },
+			"GPU5",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-6" },
+			"GPU6",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-7" },
+			"GPU7",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nsphvx-0" },
+			"nsp0",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nsphvx-1" },
+			"nsp1",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nsphvx-2" },
+			"nsp2",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nsphmx-0" },
+			"nsp3",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nsphmx-1" },
+			"nsp4",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nsphmx-2" },
+			"nsp5",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nsphmx-3" },
+			"nsp6",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+			true,
+		},
+	};
+
+	std::vector<struct target_therm_cfg> sun_profile1 = {
+		{
+			TemperatureType::CPU,
+			cpu_sensors_sun,
+			"",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-0" },
+			"GPU0",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-1" },
+			"GPU1",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-2" },
+			"GPU2",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-3" },
+			"GPU3",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-4" },
+			"GPU4",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-5" },
+			"GPU5",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-6" },
+			"GPU6",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-7" },
+			"GPU7",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nsphvx-0" },
+			"nsp0",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nsphvx-1" },
+			"nsp1",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nsphvx-2" },
+			"nsp2",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nsphmx-0" },
+			"nsp3",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nsphmx-1" },
+			"nsp4",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nsphmx-2" },
+			"nsp5",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nsphmx-3" },
+			"nsp6",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+	};
+
+	std::vector<struct target_therm_cfg> sun_specific = {
+		{
+			TemperatureType::BCL_CURRENT,
+			{ "pmih010x-ibat-lvl0" },
+			"ibat",
+			{
+			[SEVERE] = 13500,
+			[SHUTDOWN] = 15000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::SKIN,
+			{ "sys-therm-2" },
+			"skin",
+			{
+			[LIGHT] = 48000,
+			[MODERATE] = 49000,
+			[SEVERE] = 50000,
+			[CRITICAL] = 60000,
+			[EMERGENCY] = 61000,
+			[SHUTDOWN] = 90000,
+			},
+			true,
+		},
+	};
+
+	std::vector<std::string> cpu_sensors_parrot =
+	{
+		"cpu-0-0",
+		"cpu-0-1",
+		"cpu-0-2",
+		"cpu-0-3",
+		"cpu-1-0",
+		"cpu-1-2",
+		"cpu-1-4",
+		"cpu-1-6",
+	};
+
+	std::vector<struct target_therm_cfg>  parrot_common = {
+		{
+			TemperatureType::CPU,
+			cpu_sensors_parrot,
+			"",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-0" },
+			"GPU0",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-1" },
+			"GPU1",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nspss-0" },
+			"nsp0",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nspss-1" },
+			"nsp1",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+		},
+	};
+
+	std::vector<struct target_therm_cfg>  parrot_specific = {
+		{
+			TemperatureType::BCL_CURRENT,
+			{ "pm7250b-ibat-lvl0" },
+			"ibat",
+			{
+			[SEVERE] = 6000,
+			[SHUTDOWN] = 7500,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::SKIN,
+			{ "xo-therm" },
+			"skin",
+			{
+			[LIGHT] = 50000,
+			[MODERATE] = 52000,
+			[SEVERE] = 55000,
+			[CRITICAL] = 60000,
+			[EMERGENCY] = 65000,
+			[SHUTDOWN] = 95000,
+			},
+			true,
+		},
+	};
+
+	std::vector<std::string> cpu_sensors_monaco = {
+		"cpuss-0",
+		"cpuss-1",
+		"cpuss-0",
+		"cpuss-1",
+		"cpuss-0",
+		"cpuss-1",
+		"cpuss-0",
+		"cpuss-1",
+	};
+
+	std::vector<struct target_therm_cfg> sensor_cfg_monaco = {
+		{
+			TemperatureType::CPU,
+			cpu_sensors_monaco,
+			"",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpu" },
+			"gpu",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+		},
+		{
+			TemperatureType::SKIN,
+			{ "pa-therm0" },
+			"skin",
+			{
+			[LIGHT] = 40000,
+			[MODERATE] = 42000,
+			[SEVERE] = 45000,
+			[CRITICAL] = 50000,
+			[EMERGENCY] = 55000,
+			[SHUTDOWN] = 95000,
+			},
+			true,
+		},
+		{
+			TemperatureType::BCL_CURRENT,
+			{ "pm5100-ibat-lvl0" },
+			"ibat",
+			{
+			[SEVERE] = 1100,
+			[SHUTDOWN] = 1500,
+			},
+			true,
+			true,
+		},
+	};
+
+	std::vector<struct target_therm_cfg> sensor_cfg_sa8155_common =
+	{
+		{
+			TemperatureType::CPU,
+			cpu_sensors_kona,
+			"",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 118000,
+			},
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-0" },
+			"gpu0",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 118000,
+			},
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-1" },
+			"gpu1",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 118000,
+			},
+			true,
+		},
+	};
+
+	std::vector<std::string> cpu_sensors_talos =
+	{
+		"cpuss-2",
+		"cpuss-2",
+		"cpuss-1",
+		"cpuss-1",
+		"cpuss-0",
+		"cpuss-0",
+		"cpu-1-0",
+		"cpu-1-2",
+	};
+
+	std::vector<struct target_therm_cfg>  sensor_cfg_talos_common =
+	{
+		{
+			TemperatureType::CPU,
+			cpu_sensors_talos,
+			"",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 118000,
+			},
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpu" },
+			"gpu",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 118000,
+			},
+			true,
+		},
+	};
+
+	std::vector<struct target_therm_cfg>  sensor_cfg_talos_specific =
+	{
+		{
+			TemperatureType::SKIN,
+			{ "xo-therm" },
+			"skin",
+			{
+			[LIGHT] = 36500,
+			[MODERATE] = 40000,
+			[SEVERE] = 46500,
+			[CRITICAL] = 50000,
+			[EMERGENCY] = 55000,
+			[SHUTDOWN] = 95000,
+			},
+			true,
+		},
+		{
+			TemperatureType::BCL_PERCENTAGE,
+			{ "socd" },
+			"socd",
+			{
+			[SEVERE] = 90,
+			[SHUTDOWN] = 98,
+			},
+			true,
+		},
+	};
+
+	std::vector<struct target_therm_cfg>  sensor_cfg_sa8195_common =
+	{
+		{
+			TemperatureType::CPU,
+			cpu_sensors_kona,
+			"",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 118000,
+			},
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-0" },
+			"gpu0",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 118000,
+			},
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-1" },
+			"gpu1",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 118000,
+			},
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-2" },
+			"gpu2",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 118000,
+			},
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-3" },
+			"gpu3",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 118000,
+			},
+			true,
+		},
+	};
+
+	std::vector<std::string> cpu_sensors_ravelin =
+	{
+		"cpu-0-0",
+		"cpu-0-1",
+		"cpu-0-2",
+		"cpu-0-3",
+		"cpu-0-4",
+		"cpu-0-5",
+		"cpu-1-0",
+		"cpu-1-2",
+	};
+
+	std::vector<struct target_therm_cfg>  ravelin_common = {
+		{
+			TemperatureType::CPU,
+			cpu_sensors_ravelin,
+			"",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss" },
+			"GPU",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+		},
+		{
+			TemperatureType::SKIN,
+			{ "sys-therm-1" },
+			"skin",
+			{
+			[LIGHT] = 50000,
+			[MODERATE] = 52000,
+			[SEVERE] = 55000,
+			[CRITICAL] = 60000,
+			[EMERGENCY] = 65000,
+			[SHUTDOWN] = 95000,
+			},
+			true,
+		},
+	};
+
+	std::vector<struct target_therm_cfg>  ravelin_specific_qrd = {
+		{
+			TemperatureType::BCL_CURRENT,
+			{ "pmi632-ibat-lvl0" },
+			"ibat",
+			{
+			[SEVERE] = 6000,
+			[SHUTDOWN] = 7500,
+			},
+			true,
+			true,
+		},
+	};
+
+	std::vector<struct target_therm_cfg>  ravelin_specific_idp = {
+		{
+			TemperatureType::BCL_CURRENT,
+			{ "pm7250b-ibat-lvl0" },
+			"ibat",
+			{
+			[SEVERE] = 6000,
+			[SHUTDOWN] = 7500,
+			},
+			true,
+			true,
+		},
+	};
+
+	std::vector<std::string> cpu_sensors_tuna = {
+		"cpu-0-0-0",
+		"cpu-0-1-0",
+		"cpu-1-0-0",
+		"cpu-1-1-0",
+		"cpu-1-2-0",
+		"cpu-1-3-0",
+		"cpu-1-4-0",
+		"cpu-2-0-0",
+	};
+
+	std::vector<struct target_therm_cfg> tuna_common = {
+		{
+			TemperatureType::CPU,
+			cpu_sensors_tuna,
+			"",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpu-0" },
+			"GPU0",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpu-1" },
+			"GPU1",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpu-2" },
+			"GPU2",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpu-3" },
+			"GPU3",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpu-4" },
+			"GPU4",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpu-5" },
+			"GPU5",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nsphvx-0" },
+			"nsp0",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nsphvx-1" },
+			"nsp1",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nsphmx-0" },
+			"nsp3",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nsphmx-1" },
+			"nsp4",
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 125000,
+			},
+			true,
+			true,
+		},
+	};
+
+	std::vector<struct target_therm_cfg> tuna_specific = {
+		{
+			TemperatureType::SKIN,
+			{ "sys-therm-3" },
+			"skin",
+			{
+			[LIGHT] = 48000,
+			[MODERATE] = 49000,
+			[SEVERE] = 50000,
+			[CRITICAL] = 60000,
+			[EMERGENCY] = 61000,
+			[SHUTDOWN] = 90000,
+			},
+			true,
+		},
+		{
+			TemperatureType::BCL_CURRENT,
+			{ "pmih010x-ibat-lvl0" },
+			"ibat",
+			{
+			[SEVERE] = 7000,
+			[SHUTDOWN] = 9000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::BCL_CURRENT,
+			{ "pm7550ba-ibat-lvl0" },
+			"ibat",
+			{
+			[SEVERE] = 7000,
+			[SHUTDOWN] = 9000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::BCL_CURRENT,
+			{ "pmiv010x-ibat-lvl0" },
+			"ibat",
+			{
+			[SEVERE] = 7000,
+			[SHUTDOWN] = 9000,
+			},
+			true,
+			true,
+		},
+	};
+
+	std::vector<std::string> cpu_sensors_kera = {
+		"cpu-0-0-0",
+		"cpu-0-1-0",
+		"cpu-0-2-0",
+		"cpu-1-0-0",
+		"cpu-1-1-0",
+		"cpu-1-2-0",
+		"cpu-1-3-0",
+		"cpu-2-0-0",
+	};
+
+	std::vector<struct target_therm_cfg> kera_common = {
+		{
+			TemperatureType::CPU,
+			cpu_sensors_kera,
+			"",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-0" },
+			"GPU0",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-1" },
+			"GPU1",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nsphvx-0" },
+			"nsp0",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nsphvx-1" },
+			"nsp1",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nsphmx-0" },
+			"nsp3",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nsphmx-1" },
+			"nsp4",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+			true,
+		},
+	};
+
+	std::vector<struct target_therm_cfg> kera_specific = {
+		{
+			TemperatureType::SKIN,
+			{ "sys-therm-3" },
+			"skin",
+			{
+			[LIGHT] = 48000,
+			[MODERATE] = 49000,
+			[SEVERE] = 50000,
+			[CRITICAL] = 60000,
+			[EMERGENCY] = 61000,
+			[SHUTDOWN] = 90000,
+			},
+			true,
+		},
+		{
+			TemperatureType::BCL_CURRENT,
+			{ "pmiv010x-ibat-lvl0" },
+			"ibat",
+			{
+			[SEVERE] = 7000,
+			[SHUTDOWN] = 9000,
+			},
+			true,
+			true,
+		},
+		{
+			TemperatureType::BCL_CURRENT,
+			{ "pm7550ba-ibat-lvl0" },
+			"ibat",
+			{
+			[SEVERE] = 7000,
+			[SHUTDOWN] = 9000,
+			},
+			true,
+			true,
+		},
+	};
+
+	std::vector<std::string> cpu_sensors_cliffs = {
 		"cpu-0-0-0",
 		"cpu-0-1-0",
 		"cpu-0-2-0",
@@ -1822,72 +2680,90 @@ std::vector<std::string> cpu_sensors_cliffs = {
 			TemperatureType::CPU,
 			cpu_sensors_cliffs,
 			"",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-0" },
 			"GPU0",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-1" },
 			"GPU1",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-2" },
 			"GPU2",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-3" },
 			"GPU3",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nsphvx-0" },
 			"nsp0",
-			100000,
-			115000,
+			{
+			[SEVERE] = 100000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nsphvx-1" },
 			"nsp1",
-			100000,
-			115000,
+			{
+			[SEVERE] = 100000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nsphmx-0" },
 			"nsp2",
-			100000,
-			115000,
+			{
+			[SEVERE] = 100000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nsphmx-1" },
 			"nsp3",
-			100000,
-			115000,
+			{
+			[SEVERE] = 100000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 	};
@@ -1897,54 +2773,14 @@ std::vector<std::string> cpu_sensors_cliffs = {
 			TemperatureType::SKIN,
 			{ "sys-therm-4" },
 			"skin",
-			60000,
-			95000,
-			true,
-		},
-	};
-
-	std::vector<std::string> cpu_sensors_monaco = {
-		"cpuss-0",
-		"cpuss-0",
-		"cpuss-0",
-		"cpuss-0",
-		"cpuss-1",
-		"cpuss-1",
-		"cpuss-1",
-		"cpuss-1",
-	};
-
-	std::vector<struct target_therm_cfg> sensor_cfg_monaco = {
-		{
-			TemperatureType::CPU,
-			cpu_sensors_monaco,
-			"",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::GPU,
-			{ "gpu" },
-			"gpu",
-			95000,
-			115000,
-			true,
-		},
-		{
-			TemperatureType::SKIN,
-			{ "pa-therm0" },
-			"skin",
-			40000,
-			95000,
-			true,
-		},
-		{
-			TemperatureType::BCL_CURRENT,
-			{ "pm5100-ibat-lvl0" },
-			"ibat",
-			1100,
-			1500,
+			{
+			[LIGHT] = 48000,
+			[MODERATE] = 49000,
+			[SEVERE] = 50000,
+			[CRITICAL] = 60000,
+			[EMERGENCY] = 61000,
+			[SHUTDOWN] = 90000,
+			},
 			true,
 		},
 	};
@@ -1967,16 +2803,20 @@ std::vector<std::string> cpu_sensors_cliffs = {
 			TemperatureType::CPU,
 			cpu_sensors_pitti,
 			"",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss" },
 			"gpu",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 	};
@@ -1986,8 +2826,14 @@ std::vector<std::string> cpu_sensors_cliffs = {
 			TemperatureType::SKIN,
 			{ "sys-therm-3" },
 			"skin",
-			40000,
-			95000,
+			{
+			[LIGHT] = 36500,
+			[MODERATE] = 40000,
+			[SEVERE] = 46500,
+			[CRITICAL] = 50000,
+			[EMERGENCY] = 55000,
+			[SHUTDOWN] = 95000,
+			},
 			true,
 		},
 	};
@@ -2008,104 +2854,130 @@ std::vector<std::string> cpu_sensors_cliffs = {
 			TemperatureType::CPU,
 			cpu_sensors_niobe,
 			"",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-0" },
 			"GPU0",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-1" },
 			"GPU1",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-2" },
 			"GPU2",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-3" },
 			"GPU3",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-4" },
 			"GPU4",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-5" },
 			"GPU5",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-6" },
 			"GPU6",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-7" },
 			"GPU7",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nsphvx-0" },
 			"nsp0",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nsphvx-1" },
 			"nsp1",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nsphmx-0" },
 			"nsp2",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nsphmx-1" },
 			"nsp3",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 	};
@@ -2115,16 +2987,25 @@ std::vector<std::string> cpu_sensors_cliffs = {
 			TemperatureType::BCL_CURRENT,
 			{ "pm8550b-ibat-lvl0" },
 			"ibat",
-			7000,
-			7500,
+			{
+			[SEVERE] = 7000,
+			[SHUTDOWN] = 7500,
+			},
+			true,
 			true,
 		},
 		{
 			TemperatureType::SKIN,
 			{ "sys-therm-0" },
 			"skin",
-			60000,
-			95000,
+			{
+			[LIGHT] = 36500,
+			[MODERATE] = 40000,
+			[SEVERE] = 60000,
+			[CRITICAL] = 65000,
+			[EMERGENCY] = 70000,
+			[SHUTDOWN] = 95000,
+			},
 			true,
 		},
 	};
@@ -2145,48 +3026,60 @@ std::vector<std::string> cpu_sensors_cliffs = {
 			TemperatureType::CPU,
 			cpu_sensors_seraph,
 			"",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpu-0" },
 			"GPU0",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpu-1" },
 			"GPU1",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nspvxu-0" },
 			"nsp0",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nspvxu-1" },
 			"nsp1",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nspmxu" },
 			"nsp2",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 	};
@@ -2194,10 +3087,16 @@ std::vector<std::string> cpu_sensors_cliffs = {
 	std::vector<struct target_therm_cfg>  seraph_specific = {
 		{
 			TemperatureType::SKIN,
-			{ "sys-therm-0" },
+			{ "sys-therm-1" },
 			"skin",
-			60000,
-			95000,
+			{
+			[LIGHT] = 36500,
+			[MODERATE] = 40000,
+			[SEVERE] = 60000,
+			[CRITICAL] = 65000,
+			[EMERGENCY] = 70000,
+			[SHUTDOWN] = 95000,
+			},
 			true,
 		},
 	};
@@ -2218,48 +3117,60 @@ std::vector<std::string> cpu_sensors_cliffs = {
 			TemperatureType::CPU,
 			cpu_sensors_volcano,
 			"",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-0" },
 			"GPU0",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-1" },
 			"GPU1",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nsphvx-0" },
 			"nsp0",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nsphmx-0" },
 			"nsp2",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nsphmx-1" },
 			"nsp3",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 	};
@@ -2269,48 +3180,60 @@ std::vector<std::string> cpu_sensors_cliffs = {
 			TemperatureType::CPU,
 			cpu_sensors_volcano,
 			"",
-			105000,
-			118000,
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 118000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-0" },
 			"GPU0",
-			105000,
-			118000,
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 118000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-1" },
 			"GPU1",
-			105000,
-			118000,
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 118000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nsphvx-0" },
 			"nsp0",
-			105000,
-			118000,
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 118000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nsphmx-0" },
 			"nsp2",
-			105000,
-			118000,
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 118000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nsphmx-1" },
 			"nsp3",
-			105000,
-			118000,
+			{
+			[SEVERE] = 105000,
+			[SHUTDOWN] = 118000,
+			},
 			true,
 		},
 	};
@@ -2320,8 +3243,14 @@ std::vector<std::string> cpu_sensors_cliffs = {
 			TemperatureType::SKIN,
 			{ "sys-therm-0" },
 			"skin",
-			60000,
-			95000,
+			{
+			[LIGHT] = 36500,
+			[MODERATE] = 40000,
+			[SEVERE] = 60000,
+			[CRITICAL] = 65000,
+			[EMERGENCY] = 70000,
+			[SHUTDOWN] = 95000,
+			},
 			true,
 		},
 	};
@@ -2347,96 +3276,120 @@ std::vector<std::string> cpu_sensors_cliffs = {
 			TemperatureType::CPU,
 			cpu_sensors_anorak,
 			"",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nspss-0" },
 			"nsp0",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nspss-1" },
 			"nsp1",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::NPU,
 			{ "nspss-2" },
 			"nsp2",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-0" },
 			"GPU0",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-1" },
 			"GPU1",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-2" },
 			"GPU2",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-3" },
 			"GPU3",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-4" },
 			"GPU4",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-5" },
 			"GPU5",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-6" },
 			"GPU6",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
 			{ "gpuss-7" },
 			"GPU7",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 	};
@@ -2446,99 +3399,131 @@ std::vector<std::string> cpu_sensors_cliffs = {
 			TemperatureType::BCL_CURRENT,
 			{ "pm8550b-ibat-lvl0" },
 			"ibat",
-			9000,
-			10000,
+			{
+			[SEVERE] = 9000,
+			[SHUTDOWN] = 10000,
+			},
+			true,
 			true,
 		},
 		{
 			TemperatureType::SKIN,
 			{ "sys-therm-0" },
 			"skin",
-			55000,
-			95000,
+			{
+			[LIGHT] = 36500,
+			[MODERATE] = 40000,
+			[SEVERE] = 55000,
+			[CRITICAL] = 60000,
+			[EMERGENCY] = 65000,
+			[SHUTDOWN] = 95000,
+			},
 			true,
 		},
 	};
 
-	std::vector<std::string> cpu_sensors_ravelin =
+	std::vector<std::string> cpu_sensors_neo =
 	{
 		"cpu-0-0",
 		"cpu-0-1",
 		"cpu-0-2",
 		"cpu-0-3",
-		"cpu-0-4",
-		"cpu-0-5",
-		"cpu-1-0",
-		"cpu-1-2",
 	};
 
-	std::vector<struct target_therm_cfg>  ravelin_common = {
+	std::vector<struct target_therm_cfg>  neo_common = {
 		{
 			TemperatureType::CPU,
-			cpu_sensors_ravelin,
+			cpu_sensors_neo,
 			"",
-			95000,
-			115000,
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
 			true,
 		},
 		{
 			TemperatureType::GPU,
-			{ "gpuss" },
-			"GPU",
-			95000,
-			115000,
+			{ "gpuss-0" },
+			"GPU0",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+		},
+		{
+			TemperatureType::GPU,
+			{ "gpuss-1" },
+			"GPU1",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nspss-0" },
+			"nsp0",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nspss-1" },
+			"nsp1",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+		},
+		{
+			TemperatureType::NPU,
+			{ "nspss-2" },
+			"nsp2",
+			{
+			[SEVERE] = 95000,
+			[SHUTDOWN] = 115000,
+			},
+			true,
+		},
+         // Google specific changes for aurora vxp product.
+		{
+			TemperatureType::SKIN,
+			{ "disp-lea-right" },
+			"SKIN-DISP-LEA",
+			{
+			[LIGHT] = 36500,
+			[MODERATE] = 40000,
+			[SEVERE] = 65000,
+			[CRITICAL] = 70000,
+			[EMERGENCY] = 75000,
+			[SHUTDOWN] = 85000,
+			},
 			true,
 		},
 		{
 			TemperatureType::SKIN,
-			{ "sys-therm-1" },
-			"skin",
-			55000,
-			95000,
-			true,
-		},
-	};
-
-	std::vector<struct target_therm_cfg>  ravelin_specific_qrd = {
-		{
-			TemperatureType::BCL_CURRENT,
-			{ "pmi632-ibat-lvl0" },
-			"ibat",
-			6000,
-			7500,
-			true,
-		},
-	};
-
-	std::vector<struct target_therm_cfg>  ravelin_specific_idp = {
-		{
-			TemperatureType::BCL_CURRENT,
-			{ "pm7250b-ibat-lvl0" },
-			"ibat",
-			6000,
-			7500,
+			{ "disp-lea-left" },
+			"SKIN-DISP-LEA",
+			{
+			[LIGHT] = 36500,
+			[MODERATE] = 40000,
+			[SEVERE] = 65000,
+			[CRITICAL] = 70000,
+			[EMERGENCY] = 75000,
+			[SHUTDOWN] = 85000,
+			},
 			true,
 		},
 	};
 
 	const std::unordered_map<int, std::vector<struct target_therm_cfg>>
 		msm_soc_map = {
-		{353, sensor_cfg_439},
-		{354, sensor_cfg_439},
-		{363, sensor_cfg_439},
-		{364, sensor_cfg_439},
-		{416, sensor_cfg_439},
-		{437, sensor_cfg_439},
-		{349, sensor_cfg_sdm632},
-		{336, sensor_cfg_sdm710}, // SDM670
-		{360, sensor_cfg_sdm710}, // SDM710
-		{393, sensor_cfg_sdm710}, // SDM712
-		{321, sensor_cfg_sdm845},
-		{341, sensor_cfg_sdm845},
-		{355, sensor_cfg_talos_common},
-		{377, sensor_cfg_sa6155_common}, // auto
-		{380, sensor_cfg_sa6155_common}, // auto
-		{384, sensor_cfg_sa6155_common}, // auto
 		{417, sensor_cfg_bengal}, // bengal
 		{420, sensor_cfg_bengal},
 		{444, sensor_cfg_bengal},
@@ -2554,10 +3539,6 @@ std::vector<std::string> cpu_sensors_cliffs = {
 		{394, sensor_cfg_trinket},
 		{467, sensor_cfg_trinket},
 		{468, sensor_cfg_trinket},
-		{317, sensor_cfg_sdm660},
-		{318, sensor_cfg_sdm660}, // sdm630
-		{345, sensor_cfg_sdm660}, // sdm636
-		{385, sensor_cfg_sdm660}, // sdm455
 		{400, sensor_cfg_lito}, // lito
 		{440, sensor_cfg_lito},
 		{407, sensor_cfg_lito}, // atoll
@@ -2567,11 +3548,10 @@ std::vector<std::string> cpu_sensors_cliffs = {
 		{435, sensor_cfg_lito},
 		{459, sensor_cfg_lito},
 		{476, sensor_cfg_lito}, // orchid
-		{339, sensor_cfg_msmnile_common},
-		{361, sensor_cfg_msmnile_common},
+		{339, sensor_cfg_msmnile},
+		{361, sensor_cfg_msmnile},
 		{362, sensor_cfg_sa8155_common}, //auto
 		{367, sensor_cfg_sa8155_common}, //auto
-		{405, sensor_cfg_sa8195_common}, //auto
 		{356, kona_common}, // kona
 		{481, kona_common}, //kona iot
 		{548, kona_common}, //kona iot
@@ -2586,32 +3566,24 @@ std::vector<std::string> cpu_sensors_cliffs = {
 		{578, sensor_cfg_holi}, //conic
 		{475, sensor_cfg_yupik}, // yupik
 		{515, sensor_cfg_yupik}, // YUPIK-LTE
-		{576, sensor_cfg_yupik}, // yupik qcm5430 modem
-		{575, sensor_cfg_yupik}, // yupik qcm5430
-		{567, sensor_cfg_yupik}, // yupik
-		{563, sensor_cfg_yupik}, // yupik
-		{553, sensor_cfg_yupik}, // yupik
-		{546, sensor_cfg_yupik}, // yupik
-		{499, sensor_cfg_yupik}, // yupik
-		{498, sensor_cfg_yupik}, // yupik-iot
-		{497, sensor_cfg_yupik}, // yupik-iot mdm
-		{488, sensor_cfg_yupik}, // yupik
-		{487, sensor_cfg_yupik}, // yupik
 		{457, waipio_common}, //Waipio
 		{482, waipio_common}, //Waipio
 		{552, waipio_common}, //Waipio-LTE
-		{506, diwali_common}, //diwali
-		{547, diwali_common}, //diwali
-		{564, diwali_common}, //diwali-LTE
+		{506, waipio_common}, //diwali
+		{547, waipio_common}, //diwali
+		{564, waipio_common}, //diwali-LTE
 		{530, waipio_common}, // cape
 		{531, waipio_common}, // cape
 		{540, waipio_common}, // cape
+		{591, waipio_common}, //ukee
 		{519, kalama_common}, //Kalama
 		{536, kalama_common}, //Kalamap
 		{600, kalama_common}, //Kalama_sg
 		{601, kalama_common}, //Kalamap_sg
 		{603, kalama_common}, //Kalama_qcs
 		{604, kalama_common}, //Kalama_qcm
+		{668, kalama_common}, //Kalama_non-pop_qcs
+		{688, kalama_common}, //Kalama_non-pop_qcm
 		{557, pineapple_common}, //Pineapple
 		{577, pineapple_common}, //Pineapplep
 		{682, pineapple_common}, //Pineapple gaming
@@ -2619,10 +3591,45 @@ std::vector<std::string> cpu_sensors_cliffs = {
 		{645, pineapple_common}, //Pineapple
 		{646, pineapple_common}, //Pineapple
 		{702, pineapple_common}, //Pineapple
-		{632, cliffs_common}, //cliffs
-		{614, cliffs_common}, //cliffs7
+		{618, sun_specific}, //Sun
+		{639, sun_specific}, //Sunp
+		{705, sun_specific}, //CQ8750S
+		{706, sun_specific}, //CQ8725S
+		{537, parrot_common}, //Netrani mobile
+		{583, parrot_common}, //Netrani mobile without modem
+		{613, parrot_common}, //Netrani APQ
+		{631, parrot_common},
+		{633, parrot_common}, //Netrani Gaming SKU with modem
+		{634, parrot_common}, //Netrani Gaming SKU without modem
+		{638, parrot_common}, //SM7435P
+		{663, parrot_common}, //SM7435
+		{713, parrot_common}, //Netrani APQ
+		{714, parrot_common}, //Netrani APQ
+		{715, parrot_common}, //Netrani Lite
 		{486, sensor_cfg_monaco}, // monaco
 		{517, sensor_cfg_monaco}, // monaco
+		{355, sensor_cfg_talos_common},
+		{377, sensor_cfg_talos_common},
+		{380, sensor_cfg_talos_common},
+		{384, sensor_cfg_talos_common},
+		{405, sensor_cfg_sa8195_common},
+		{568, ravelin_common}, //Clarence Mobile
+		{581, ravelin_common}, //Clarence IOT
+		{582, ravelin_common}, //Clarence IOT without modem
+		{653, ravelin_common}, //Clarence Gaming
+		{654, ravelin_common}, //Clarence Gaming
+		{602, ravelin_common}, //Clarence APQ
+		{681, tuna_common}, //Bonito
+		{655, tuna_common}, //Bonito
+		{694, tuna_common}, //Bonito
+		{659, kera_common}, //Eliza
+		{686, kera_common}, //Eliza
+		{720, kera_common}, //Eliza-Paloma
+		{721, kera_common}, //Eliza-Paloma
+		{731, kera_common}, //Eliza IOT
+		{732, kera_common}, //Eliza IOT
+		{632, cliffs_common}, //cliffs
+		{614, cliffs_common}, //cliffs7
 		{623, sensor_cfg_pitti}, // Kalpeni
 		{629, niobe_common}, //Matrix
 		{652, niobe_common}, // Matrix_4k
@@ -2636,14 +3643,7 @@ std::vector<std::string> cpu_sensors_cliffs = {
 		{673, seraph_common}, //Balsam-SAR2230P
 		{525, neo_common},
 		{554, neo_common},
-		{537, parrot_common}, //Netrani mobile
-		{583, parrot_common}, //Netrani mobile without modem
-		{613, parrot_common}, //Netrani APQ
-		{631, parrot_common},
-		{568, ravelin_common}, //Clarence Mobile
-		{581, ravelin_common}, //Clarence IOT
-		{582, ravelin_common}, //Clarence IOT without modem
-		{591, waipio_common}, //ukee
+		{579, neo_common},
 		{608, crow_common}, //crow
 		{644, crow_common}, //crow 4G
 		{532, lemansAU_common}, //Lemans auto
@@ -2669,12 +3669,15 @@ std::vector<std::string> cpu_sensors_cliffs = {
 		{530, waipio_specific}, // cape
 		{531, waipio_specific}, // cape
 		{540, waipio_specific}, // cape
+		{591, waipio_specific}, //ukee
 		{519, kalama_specific}, //Kalama
 		{536, kalama_specific}, //Kalamap
 		{600, kalama_specific}, //Kalama_sg
 		{601, kalama_specific}, //Kalamap_sg
 		{603, kalama_specific}, //Kalama_qcs
 		{604, kalama_specific}, //Kalama_qcm
+		{668, kalama_specific}, //Kalama_non-pop_qcs
+		{688, kalama_specific}, //Kalama_non-pop_qcm
 		{557, pineapple_specific}, //Pineapple
 		{577, pineapple_specific}, //Pineapplep
 		{682, pineapple_specific}, //Pineapple gaming
@@ -2682,6 +3685,26 @@ std::vector<std::string> cpu_sensors_cliffs = {
 		{645, pineapple_specific}, //Pineapple
 		{646, pineapple_specific}, //Pineapple
 		{702, pineapple_specific}, //Pineapple
+		{537, parrot_specific}, //Netrani mobile
+		{583, parrot_specific}, //Netrani mobile without modem
+		{613, parrot_specific}, //Netrani APQ
+		{631, parrot_specific},
+		{663, parrot_specific}, //Netrani pro
+		{713, parrot_specific},
+		{714, parrot_specific}, //Netrani APQ
+		{715, parrot_specific}, //Netrani Lite
+		{339, sensor_cfg_msmnile_specific},
+		{361, sensor_cfg_msmnile_specific},
+		{355, sensor_cfg_talos_specific},
+		{681, tuna_specific}, //Bonito
+		{655, tuna_specific}, //Bonito
+		{694, tuna_specific}, //Bonito
+		{659, kera_specific}, //Eliza
+		{686, kera_specific}, //Eliza
+		{720, kera_specific}, //Eliza-Paloma
+		{721, kera_specific}, //Eliza-Paloma
+		{731, kera_specific}, //Eliza IOT
+		{732, kera_specific}, //Eliza IOT
 		{632, cliffs_specific}, //cliffs
 		{614, cliffs_specific}, //cliffs7
 		{623, pitti_specific}, // Kalpeni
@@ -2693,23 +3716,37 @@ std::vector<std::string> cpu_sensors_cliffs = {
 		{649, anorak_specific}, // Halliday Pro
 		{672, seraph_specific}, //Balsam-SAR1250P
 		{673, seraph_specific}, //Balsam-SAR2230P
-		{537, parrot_specific}, //Netrani mobile
-		{583, parrot_specific}, //Netrani mobile without modem
-		{613, parrot_specific}, //Netrani APQ
-		{631, parrot_specific},
-		{591, waipio_specific}, //ukee
 		{608, crow_specific}, //crow
 		{644, crow_specific}, //crow
 	};
 
-	const std::unordered_map<int, bool>
-		battery_bcl_cfg_disable_map = {
-		{377, true},
-		{380, true},
-		{384, true},
-		{362, true},
-		{367, true},
-		{405, true},
+	const std::unordered_multimap<int, std::pair<int, std::vector<struct target_therm_cfg>>>
+	msm_limit_profile_specific = {
+		{618, std::make_pair(0, sun_profile0)},
+		{618, std::make_pair(1, sun_profile1)},
+		{639, std::make_pair(0, sun_profile0)},
+		{639, std::make_pair(1, sun_profile1)},
+		{705, std::make_pair(0, sun_profile0)},
+		{705, std::make_pair(1, sun_profile1)},
+		{706, std::make_pair(0, sun_profile0)},
+		{706, std::make_pair(1, sun_profile1)},
+		{657, std::make_pair(0, volcano_common)},
+		{657, std::make_pair(1, volcano_profile1)},
+		{658, std::make_pair(0, volcano_common)},
+		{658, std::make_pair(1, volcano_profile1)},
+	};
+
+	const std::unordered_map<int, std::string>
+        batt_bcl_not_supported = {
+		{384, "talosAU"},
+		{405, "sa8195AU"},
+		{367, "hanaAU"},
+		{362, "hanaAU"},
+		{532, "lemansAU"},
+		{377, "talosAU"},
+		{380, "talosAU"},
+		{549, "anorak"},
+		{649, "anorakp"},
 	};
 
 	const std::unordered_multimap<int, std::pair<std::string,
@@ -2719,49 +3756,41 @@ std::vector<std::string> cpu_sensors_cliffs = {
 		{568, std::make_pair("IDP", ravelin_specific_idp)},
 	};
 
-	const std::unordered_multimap<int, std::pair<int, std::vector<struct target_therm_cfg>>>
-	msm_limit_profile_specific = {
-		{657, std::make_pair(0, volcano_common)},
-		{657, std::make_pair(1, volcano_profile1)},
-		{658, std::make_pair(0, volcano_common)},
-		{658, std::make_pair(1, volcano_profile1)},
-	};
-
 	std::vector<struct target_therm_cfg> add_target_config(
-			int socID, int lp, std::string hwPlatform,
+			int socID, std::string hwPlatform, int lp,
 			std::vector<struct target_therm_cfg> conf)
 	{
 		std::vector<struct target_therm_cfg> targetConf;
 
 		if (msm_soc_specific.find(socID) != msm_soc_specific.end()) {
 			targetConf = (msm_soc_specific.find(socID))->second;
+
 			conf.insert(conf.end(), targetConf.begin(),
-					targetConf.end());
+						targetConf.end());
 		}
 
-		auto range = msm_limit_profile_specific.equal_range(socID);
-		auto it = range.first;
-		if (range.first != msm_limit_profile_specific.end()) {
-			for (; it != range.second; ++it) {
-				if (it->second.first != lp)
+		auto range1 = msm_limit_profile_specific.equal_range(socID);
+		auto it1 = range1.first;
+		if (range1.first != msm_limit_profile_specific.end()) {
+			for (; it1 != range1.second; ++it1) {
+				if (it1->second.first != lp)
 					continue;
-				targetConf = it->second.second;
-				conf.insert(conf.end(), targetConf.begin(),
-						targetConf.end());
+				targetConf = it1->second.second;
+				conf.insert(conf.end(), targetConf.begin(),targetConf.end());
 				break;
 			}
 		}
 
-		auto hw_range = msm_platform_specific.equal_range(socID);
-		auto hw_it = hw_range.first;
-		for (; hw_it != hw_range.second; ++hw_it) {
-			if (hw_it->second.first != hwPlatform)
-				continue;
-
-			targetConf = hw_it->second.second;
-			conf.insert(conf.end(), targetConf.begin(),
-					targetConf.end());
-			break;
+		auto range2 = msm_platform_specific.equal_range(socID);
+		auto it2 = range2.first;
+		if (range2.first != msm_platform_specific.end()) {
+			for (; it2 != range2.second; ++it2) {
+				if (it2->second.first != hwPlatform)
+					continue;
+				targetConf = it2->second.second;
+				conf.insert(conf.end(), targetConf.begin(), targetConf.end());
+				break;
+			}
 		}
 
 		return conf;
@@ -2770,23 +3799,18 @@ std::vector<std::string> cpu_sensors_cliffs = {
 	ThermalConfig::ThermalConfig():cmnInst()
 	{
 		std::unordered_map<int, std::vector<struct target_therm_cfg>>::const_iterator it;
-		std::unordered_map<int, bool>::const_iterator it_2;
 		std::vector<struct target_therm_cfg>::iterator it_vec;
 		bool bcl_defined = false;
 		std::string soc_val;
+		std::string hwPlatform;
 		int ct = 0;
 		bool read_ok = false;
+		limitp = 0;
 
-		soc_id = 0;
 		do {
 			if (cmnInst.readFromFile(socIDPath, soc_val) <= 0) {
 				LOG(ERROR) <<"soc ID fetch error";
 				return;
-			}
-
-			if (cmnInst.readFromFile(hwPlatformPath, hw_platform) <= 0) {
-				LOG(ERROR) <<"hw Platform fetch error";
-				continue;
 			}
 
 			try {
@@ -2797,7 +3821,21 @@ std::vector<std::string> cpu_sensors_cliffs = {
 				LOG(ERROR) <<"soc id stoi err:" << err.what()
 					<< " buf:" << soc_val;
 			}
-		} while (ct++ && !read_ok && ct < RETRY_CT);
+
+			if (cmnInst.readFromFile(hwPlatformPath, hwPlatform) <= 0) {
+				LOG(ERROR) <<"hw Platform fetch error";
+				continue;
+			}
+
+			try {
+				if (!hwPlatform.empty())
+					LOG(INFO) <<"HW Platform is found";
+			}
+			catch (std::exception &err) {
+				LOG(ERROR) <<"hw Platform is not found:" << err.what();
+			}
+			ct++;
+		} while (!read_ok && ct < RETRY_CT);
 		if (soc_id <= 0) {
 			LOG(ERROR) << "Invalid soc ID: " << soc_id;
 			return;
@@ -2817,15 +3855,15 @@ std::vector<std::string> cpu_sensors_cliffs = {
 			LOG(ERROR) << "No config for soc ID: " << soc_id;
 			return;
 		}
-		thermalConfig = add_target_config(soc_id, limitp, hw_platform, it->second);
+		thermalConfig = add_target_config(soc_id, hwPlatform, limitp, it->second);
+
 		for (it_vec = thermalConfig.begin();
 				it_vec != thermalConfig.end(); it_vec++) {
 			if (it_vec->type == TemperatureType::BCL_PERCENTAGE)
 				bcl_defined = true;
 		}
 
-		it_2 = battery_bcl_cfg_disable_map.find(soc_id);
-		if (it_2 == battery_bcl_cfg_disable_map.end() || !it_2->second) {
+		if (batt_bcl_not_supported.find(soc_id) == batt_bcl_not_supported.end()) {
 			thermalConfig.push_back(bat_conf);
 			if (!bcl_defined)
 				thermalConfig.insert(thermalConfig.end(),
